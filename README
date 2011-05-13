@@ -29,7 +29,7 @@ DESCRIPTION
       This encoding method can treat CESU-8(Compatibility Encoding Scheme for
       UTF-16: 8-Bit) and Modified UTF-8.
 
-INSTALLATION BY MAKE (for UNIX)
+INSTALLATION BY MAKE (for UNIX like system)
 
 To install this software by make, type the following:
 
