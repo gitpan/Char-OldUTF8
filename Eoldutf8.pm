@@ -16,7 +16,7 @@ use strict qw(subs vars);
 # (and so on)
 
 BEGIN { eval q{ use vars qw($VERSION) } }
-$VERSION = sprintf '%d.%02d', q$Revision: 0.78 $ =~ m/(\d+)/xmsg;
+$VERSION = sprintf '%d.%02d', q$Revision: 0.79 $ =~ m/(\d+)/xmsg;
 
 BEGIN {
     my $PERL5LIB = __FILE__;
@@ -1147,6 +1147,8 @@ sub _charlist {
     my $modifier = pop @_;
     my @char = @_;
 
+    my $ignorecase = ($modifier =~ m/i/oxms) ? 1 : 0;
+
     # unescape character
     for (my $i=0; $i <= $#char; $i++) {
 
@@ -1223,6 +1225,16 @@ sub _charlist {
         }
 
         # POSIX-style character classes
+        elsif ($ignorecase and ($char[$i] =~ m/\A ( \[\: \^? (?:lower|upper) :\] ) \z/oxms)) {
+            $char[$i] = {
+
+                '[:lower:]'   => '[\x41-\x5A\x61-\x7A]',
+                '[:upper:]'   => '[\x41-\x5A\x61-\x7A]',
+                '[:^lower:]'  => '(?:(?:[\xC0-\xDF]|[\xE0-\xEF][\x80-\xBF]|[\xF0-\xF4][\x80-\xBF][\x80-\xBF])[\x00-\xFF]|[^\x80-\xFF])',
+                '[:^upper:]'  => '(?:(?:[\xC0-\xDF]|[\xE0-\xEF][\x80-\xBF]|[\xF0-\xF4][\x80-\xBF][\x80-\xBF])[\x00-\xFF]|[^\x80-\xFF])',
+
+            }->{$1};
+        }
         elsif ($char[$i] =~ m/\A ( \[\: \^? (?:alnum|alpha|ascii|blank|cntrl|digit|graph|lower|print|punct|space|upper|word|xdigit) :\] ) \z/oxms) {
             $char[$i] = {
 
@@ -1240,7 +1252,6 @@ sub _charlist {
                 '[:upper:]'   => '[\x41-\x5A]',
                 '[:word:]'    => '[\x30-\x39\x41-\x5A\x5F\x61-\x7A]',
                 '[:xdigit:]'  => '[\x30-\x39\x41-\x46\x61-\x66]',
-
                 '[:^alnum:]'  => '(?:(?:[\xC0-\xDF]|[\xE0-\xEF][\x80-\xBF]|[\xF0-\xF4][\x80-\xBF][\x80-\xBF])[\x00-\xFF]|[^\x80-\xFF\x30-\x39\x41-\x5A\x61-\x7A])',
                 '[:^alpha:]'  => '(?:(?:[\xC0-\xDF]|[\xE0-\xEF][\x80-\xBF]|[\xF0-\xF4][\x80-\xBF][\x80-\xBF])[\x00-\xFF]|[^\x80-\xFF\x41-\x5A\x61-\x7A])',
                 '[:^ascii:]'  => '(?:(?:[\xC0-\xDF]|[\xE0-\xEF][\x80-\xBF]|[\xF0-\xF4][\x80-\xBF][\x80-\xBF])[\x00-\xFF]|[^\x80-\xFF\x00-\x7F])',
@@ -2142,6 +2153,7 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
   If no old UTF-8 string is specified via =~ operator, the $_ variable is translated.
   $modifier are:
 
+  ------------------------------------------------------
   Modifier   Meaning
   ------------------------------------------------------
   c          Complement $searchlist

@@ -339,4 +339,4 @@ For example, Eoldutf8::chop function returns this octet.
 
 SEE ALSO
 
-perl, Sjis.pm, UTF2.pm
+perl, OldUTF8.pm, Eoldutf8.pm, jacode.pl
