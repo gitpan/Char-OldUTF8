@@ -1,7 +1,7 @@
 --- #YAML:1.0
 name: OldUTF8
 abstract: Source code filter for old UTF-8 script
-version: 0.80
+version: 0.81
 author:
   - INABA Hitoshi <ina@cpan.org>
 license: perl
