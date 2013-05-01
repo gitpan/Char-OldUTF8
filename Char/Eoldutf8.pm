@@ -28,7 +28,7 @@ BEGIN {
 # (and so on)
 
 BEGIN { eval q{ use vars qw($VERSION) } }
-$VERSION = sprintf '%d.%02d', q$Revision: 0.87 $ =~ /(\d+)/xmsg;
+$VERSION = sprintf '%d.%02d', q$Revision: 0.88 $ =~ /(\d+)/xmsg;
 
 BEGIN {
     my $PERL5LIB = __FILE__;
@@ -150,7 +150,7 @@ sub croak;
 sub cluck;
 sub confess;
 
-my $your_char = q{(?:[\xC0-\xDF]|[\xE0-\xEF][\x80-\xBF]|[\xF0-\xF4][\x80-\xBF][\x80-\xBF])[\x00-\xFF]|[\x00-\xFF]};
+my $your_char = q{(?:[\xC0-\xDF]|[\xE0-\xEF][\x80-\xBF]|[\xF0-\xF4][\x80-\xBF][\x80-\xBF])[\x80-\xBF]|[\x00-\x7F\xF5-\xFF]};
 
 # regexp of character
 my $q_char = qr/$your_char/oxms;
@@ -184,6 +184,7 @@ if (0) {
 elsif (__PACKAGE__ =~ / \b Eoldutf8 \z/oxms) {
     %range_tr = (
         1 => [ [0x00..0x7F],
+               [0xF5..0xFF], # malformed octet
              ],
         2 => [ [0xC0..0xDF],[0x80..0xBF],
              ],
@@ -1437,7 +1438,6 @@ sub Char::OldUTF8::rindex($$;$);
 # Character class
 #
 BEGIN { eval q{ use vars qw(
-    $anchor
     $dot
     $dot_s
     $eD
@@ -1465,44 +1465,72 @@ BEGIN { eval q{ use vars qw(
     $not_xdigit
     $eb
     $eB
-    $matched
 ) } }
-${Char::Eoldutf8::anchor}      = qr{\G(?:(?:[\xC0-\xDF]|[\xE0-\xEF][\x80-\xBF]|[\xF0-\xF4][\x80-\xBF][\x80-\xBF])[\x00-\xFF]|[^\x80-\xFF])*?};
-${Char::Eoldutf8::dot}         = qr{(?:(?:[\xC0-\xDF]|[\xE0-\xEF][\x80-\xBF]|[\xF0-\xF4][\x80-\xBF][\x80-\xBF])[\x00-\xFF]|[^\x80-\xFF\x0A])};
-${Char::Eoldutf8::dot_s}       = qr{(?:(?:[\xC0-\xDF]|[\xE0-\xEF][\x80-\xBF]|[\xF0-\xF4][\x80-\xBF][\x80-\xBF])[\x00-\xFF]|[^\x80-\xFF])};
-${Char::Eoldutf8::eD}          = qr{(?:(?:[\xC0-\xDF]|[\xE0-\xEF][\x80-\xBF]|[\xF0-\xF4][\x80-\xBF][\x80-\xBF])[\x00-\xFF]|[^\x80-\xFF0-9])};
 
-${Char::Eoldutf8::eS}          = qr{(?:(?:[\xC0-\xDF]|[\xE0-\xEF][\x80-\xBF]|[\xF0-\xF4][\x80-\xBF][\x80-\xBF])[\x00-\xFF]|[^\x80-\xFF\x09\x0A\x0C\x0D\x20])};
+${Char::Eoldutf8::dot}         = qr{(?:(?:[\xC0-\xDF]|[\xE0-\xEF][\x80-\xBF]|[\xF0-\xF4][\x80-\xBF][\x80-\xBF])[\x80-\xBF]|[^\x80-\xFF\x0A])};
+${Char::Eoldutf8::dot_s}       = qr{(?:(?:[\xC0-\xDF]|[\xE0-\xEF][\x80-\xBF]|[\xF0-\xF4][\x80-\xBF][\x80-\xBF])[\x80-\xBF]|[^\x80-\xFF])};
+${Char::Eoldutf8::eD}          = qr{(?:(?:[\xC0-\xDF]|[\xE0-\xEF][\x80-\xBF]|[\xF0-\xF4][\x80-\xBF][\x80-\xBF])[\x80-\xBF]|[^\x80-\xFF0-9])};
+
+${Char::Eoldutf8::eS}          = qr{(?:(?:[\xC0-\xDF]|[\xE0-\xEF][\x80-\xBF]|[\xF0-\xF4][\x80-\xBF][\x80-\xBF])[\x80-\xBF]|[^\x80-\xFF\x09\x0A\x0C\x0D\x20])};
 
 # Incompatible Changes
 # \s in regular expressions now matches a Vertical Tab (experimental)
 # http://search.cpan.org/~zefram/perl-5.17.0/pod/perldelta.pod
 
-# ${Char::Eoldutf8::eS}        = qr{(?:(?:[\xC0-\xDF]|[\xE0-\xEF][\x80-\xBF]|[\xF0-\xF4][\x80-\xBF][\x80-\xBF])[\x00-\xFF]|[^\x80-\xFF\x09\x0A\x0B\x0C\x0D\x20])};
+# ${Char::Eoldutf8::eS}        = qr{(?:(?:[\xC0-\xDF]|[\xE0-\xEF][\x80-\xBF]|[\xF0-\xF4][\x80-\xBF][\x80-\xBF])[\x80-\xBF]|[^\x80-\xFF\x09\x0A\x0B\x0C\x0D\x20])};
 
-${Char::Eoldutf8::eW}          = qr{(?:(?:[\xC0-\xDF]|[\xE0-\xEF][\x80-\xBF]|[\xF0-\xF4][\x80-\xBF][\x80-\xBF])[\x00-\xFF]|[^\x80-\xFF0-9A-Z_a-z])};
-${Char::Eoldutf8::eH}          = qr{(?:(?:[\xC0-\xDF]|[\xE0-\xEF][\x80-\xBF]|[\xF0-\xF4][\x80-\xBF][\x80-\xBF])[\x00-\xFF]|[^\x80-\xFF\x09\x20])};
-${Char::Eoldutf8::eV}          = qr{(?:(?:[\xC0-\xDF]|[\xE0-\xEF][\x80-\xBF]|[\xF0-\xF4][\x80-\xBF][\x80-\xBF])[\x00-\xFF]|[^\x80-\xFF\x0A\x0B\x0C\x0D])};
+${Char::Eoldutf8::eW}          = qr{(?:(?:[\xC0-\xDF]|[\xE0-\xEF][\x80-\xBF]|[\xF0-\xF4][\x80-\xBF][\x80-\xBF])[\x80-\xBF]|[^\x80-\xFF0-9A-Z_a-z])};
+${Char::Eoldutf8::eH}          = qr{(?:(?:[\xC0-\xDF]|[\xE0-\xEF][\x80-\xBF]|[\xF0-\xF4][\x80-\xBF][\x80-\xBF])[\x80-\xBF]|[^\x80-\xFF\x09\x20])};
+${Char::Eoldutf8::eV}          = qr{(?:(?:[\xC0-\xDF]|[\xE0-\xEF][\x80-\xBF]|[\xF0-\xF4][\x80-\xBF][\x80-\xBF])[\x80-\xBF]|[^\x80-\xFF\x0A\x0B\x0C\x0D])};
 ${Char::Eoldutf8::eR}          = qr{(?:\x0D\x0A|[\x0A\x0D])};
-${Char::Eoldutf8::eN}          = qr{(?:(?:[\xC0-\xDF]|[\xE0-\xEF][\x80-\xBF]|[\xF0-\xF4][\x80-\xBF][\x80-\xBF])[\x00-\xFF]|[^\x80-\xFF\x0A])};
-${Char::Eoldutf8::not_alnum}   = qr{(?:(?:[\xC0-\xDF]|[\xE0-\xEF][\x80-\xBF]|[\xF0-\xF4][\x80-\xBF][\x80-\xBF])[\x00-\xFF]|[^\x80-\xFF\x30-\x39\x41-\x5A\x61-\x7A])};
-${Char::Eoldutf8::not_alpha}   = qr{(?:(?:[\xC0-\xDF]|[\xE0-\xEF][\x80-\xBF]|[\xF0-\xF4][\x80-\xBF][\x80-\xBF])[\x00-\xFF]|[^\x80-\xFF\x41-\x5A\x61-\x7A])};
-${Char::Eoldutf8::not_ascii}   = qr{(?:(?:[\xC0-\xDF]|[\xE0-\xEF][\x80-\xBF]|[\xF0-\xF4][\x80-\xBF][\x80-\xBF])[\x00-\xFF]|[^\x80-\xFF\x00-\x7F])};
-${Char::Eoldutf8::not_blank}   = qr{(?:(?:[\xC0-\xDF]|[\xE0-\xEF][\x80-\xBF]|[\xF0-\xF4][\x80-\xBF][\x80-\xBF])[\x00-\xFF]|[^\x80-\xFF\x09\x20])};
-${Char::Eoldutf8::not_cntrl}   = qr{(?:(?:[\xC0-\xDF]|[\xE0-\xEF][\x80-\xBF]|[\xF0-\xF4][\x80-\xBF][\x80-\xBF])[\x00-\xFF]|[^\x80-\xFF\x00-\x1F\x7F])};
-${Char::Eoldutf8::not_digit}   = qr{(?:(?:[\xC0-\xDF]|[\xE0-\xEF][\x80-\xBF]|[\xF0-\xF4][\x80-\xBF][\x80-\xBF])[\x00-\xFF]|[^\x80-\xFF\x30-\x39])};
-${Char::Eoldutf8::not_graph}   = qr{(?:(?:[\xC0-\xDF]|[\xE0-\xEF][\x80-\xBF]|[\xF0-\xF4][\x80-\xBF][\x80-\xBF])[\x00-\xFF]|[^\x80-\xFF\x21-\x7F])};
-${Char::Eoldutf8::not_lower}   = qr{(?:(?:[\xC0-\xDF]|[\xE0-\xEF][\x80-\xBF]|[\xF0-\xF4][\x80-\xBF][\x80-\xBF])[\x00-\xFF]|[^\x80-\xFF\x61-\x7A])};
-${Char::Eoldutf8::not_lower_i} = qr{(?:(?:[\xC0-\xDF]|[\xE0-\xEF][\x80-\xBF]|[\xF0-\xF4][\x80-\xBF][\x80-\xBF])[\x00-\xFF]|[^\x80-\xFF])};
-${Char::Eoldutf8::not_print}   = qr{(?:(?:[\xC0-\xDF]|[\xE0-\xEF][\x80-\xBF]|[\xF0-\xF4][\x80-\xBF][\x80-\xBF])[\x00-\xFF]|[^\x80-\xFF\x20-\x7F])};
-${Char::Eoldutf8::not_punct}   = qr{(?:(?:[\xC0-\xDF]|[\xE0-\xEF][\x80-\xBF]|[\xF0-\xF4][\x80-\xBF][\x80-\xBF])[\x00-\xFF]|[^\x80-\xFF\x21-\x2F\x3A-\x3F\x40\x5B-\x5F\x60\x7B-\x7E])};
-${Char::Eoldutf8::not_space}   = qr{(?:(?:[\xC0-\xDF]|[\xE0-\xEF][\x80-\xBF]|[\xF0-\xF4][\x80-\xBF][\x80-\xBF])[\x00-\xFF]|[^\x80-\xFF\x09\x0A\x0B\x0C\x0D\x20])};
-${Char::Eoldutf8::not_upper}   = qr{(?:(?:[\xC0-\xDF]|[\xE0-\xEF][\x80-\xBF]|[\xF0-\xF4][\x80-\xBF][\x80-\xBF])[\x00-\xFF]|[^\x80-\xFF\x41-\x5A])};
-${Char::Eoldutf8::not_upper_i} = qr{(?:(?:[\xC0-\xDF]|[\xE0-\xEF][\x80-\xBF]|[\xF0-\xF4][\x80-\xBF][\x80-\xBF])[\x00-\xFF]|[^\x80-\xFF])};
-${Char::Eoldutf8::not_word}    = qr{(?:(?:[\xC0-\xDF]|[\xE0-\xEF][\x80-\xBF]|[\xF0-\xF4][\x80-\xBF][\x80-\xBF])[\x00-\xFF]|[^\x80-\xFF\x30-\x39\x41-\x5A\x5F\x61-\x7A])};
-${Char::Eoldutf8::not_xdigit}  = qr{(?:(?:[\xC0-\xDF]|[\xE0-\xEF][\x80-\xBF]|[\xF0-\xF4][\x80-\xBF][\x80-\xBF])[\x00-\xFF]|[^\x80-\xFF\x30-\x39\x41-\x46\x61-\x66])};
+${Char::Eoldutf8::eN}          = qr{(?:(?:[\xC0-\xDF]|[\xE0-\xEF][\x80-\xBF]|[\xF0-\xF4][\x80-\xBF][\x80-\xBF])[\x80-\xBF]|[^\x80-\xFF\x0A])};
+${Char::Eoldutf8::not_alnum}   = qr{(?:(?:[\xC0-\xDF]|[\xE0-\xEF][\x80-\xBF]|[\xF0-\xF4][\x80-\xBF][\x80-\xBF])[\x80-\xBF]|[^\x80-\xFF\x30-\x39\x41-\x5A\x61-\x7A])};
+${Char::Eoldutf8::not_alpha}   = qr{(?:(?:[\xC0-\xDF]|[\xE0-\xEF][\x80-\xBF]|[\xF0-\xF4][\x80-\xBF][\x80-\xBF])[\x80-\xBF]|[^\x80-\xFF\x41-\x5A\x61-\x7A])};
+${Char::Eoldutf8::not_ascii}   = qr{(?:(?:[\xC0-\xDF]|[\xE0-\xEF][\x80-\xBF]|[\xF0-\xF4][\x80-\xBF][\x80-\xBF])[\x80-\xBF]|[^\x80-\xFF\x00-\x7F])};
+${Char::Eoldutf8::not_blank}   = qr{(?:(?:[\xC0-\xDF]|[\xE0-\xEF][\x80-\xBF]|[\xF0-\xF4][\x80-\xBF][\x80-\xBF])[\x80-\xBF]|[^\x80-\xFF\x09\x20])};
+${Char::Eoldutf8::not_cntrl}   = qr{(?:(?:[\xC0-\xDF]|[\xE0-\xEF][\x80-\xBF]|[\xF0-\xF4][\x80-\xBF][\x80-\xBF])[\x80-\xBF]|[^\x80-\xFF\x00-\x1F\x7F])};
+${Char::Eoldutf8::not_digit}   = qr{(?:(?:[\xC0-\xDF]|[\xE0-\xEF][\x80-\xBF]|[\xF0-\xF4][\x80-\xBF][\x80-\xBF])[\x80-\xBF]|[^\x80-\xFF\x30-\x39])};
+${Char::Eoldutf8::not_graph}   = qr{(?:(?:[\xC0-\xDF]|[\xE0-\xEF][\x80-\xBF]|[\xF0-\xF4][\x80-\xBF][\x80-\xBF])[\x80-\xBF]|[^\x80-\xFF\x21-\x7F])};
+${Char::Eoldutf8::not_lower}   = qr{(?:(?:[\xC0-\xDF]|[\xE0-\xEF][\x80-\xBF]|[\xF0-\xF4][\x80-\xBF][\x80-\xBF])[\x80-\xBF]|[^\x80-\xFF\x61-\x7A])};
+${Char::Eoldutf8::not_lower_i} = qr{(?:(?:[\xC0-\xDF]|[\xE0-\xEF][\x80-\xBF]|[\xF0-\xF4][\x80-\xBF][\x80-\xBF])[\x80-\xBF]|[^\x80-\xFF])};
+${Char::Eoldutf8::not_print}   = qr{(?:(?:[\xC0-\xDF]|[\xE0-\xEF][\x80-\xBF]|[\xF0-\xF4][\x80-\xBF][\x80-\xBF])[\x80-\xBF]|[^\x80-\xFF\x20-\x7F])};
+${Char::Eoldutf8::not_punct}   = qr{(?:(?:[\xC0-\xDF]|[\xE0-\xEF][\x80-\xBF]|[\xF0-\xF4][\x80-\xBF][\x80-\xBF])[\x80-\xBF]|[^\x80-\xFF\x21-\x2F\x3A-\x3F\x40\x5B-\x5F\x60\x7B-\x7E])};
+${Char::Eoldutf8::not_space}   = qr{(?:(?:[\xC0-\xDF]|[\xE0-\xEF][\x80-\xBF]|[\xF0-\xF4][\x80-\xBF][\x80-\xBF])[\x80-\xBF]|[^\x80-\xFF\x09\x0A\x0B\x0C\x0D\x20])};
+${Char::Eoldutf8::not_upper}   = qr{(?:(?:[\xC0-\xDF]|[\xE0-\xEF][\x80-\xBF]|[\xF0-\xF4][\x80-\xBF][\x80-\xBF])[\x80-\xBF]|[^\x80-\xFF\x41-\x5A])};
+${Char::Eoldutf8::not_upper_i} = qr{(?:(?:[\xC0-\xDF]|[\xE0-\xEF][\x80-\xBF]|[\xF0-\xF4][\x80-\xBF][\x80-\xBF])[\x80-\xBF]|[^\x80-\xFF])};
+${Char::Eoldutf8::not_word}    = qr{(?:(?:[\xC0-\xDF]|[\xE0-\xEF][\x80-\xBF]|[\xF0-\xF4][\x80-\xBF][\x80-\xBF])[\x80-\xBF]|[^\x80-\xFF\x30-\x39\x41-\x5A\x5F\x61-\x7A])};
+${Char::Eoldutf8::not_xdigit}  = qr{(?:(?:[\xC0-\xDF]|[\xE0-\xEF][\x80-\xBF]|[\xF0-\xF4][\x80-\xBF][\x80-\xBF])[\x80-\xBF]|[^\x80-\xFF\x30-\x39\x41-\x46\x61-\x66])};
 ${Char::Eoldutf8::eb}          = qr{(?:\A(?=[0-9A-Z_a-z])|(?<=[\x00-\x2F\x40\x5B-\x5E\x60\x7B-\xFF])(?=[0-9A-Z_a-z])|(?<=[0-9A-Z_a-z])(?=[\x00-\x2F\x40\x5B-\x5E\x60\x7B-\xFF]|\z))};
 ${Char::Eoldutf8::eB}          = qr{(?:(?<=[0-9A-Z_a-z])(?=[0-9A-Z_a-z])|(?<=[\x00-\x2F\x40\x5B-\x5E\x60\x7B-\xFF])(?=[\x00-\x2F\x40\x5B-\x5E\x60\x7B-\xFF]))};
+
+# avoid: Name "Char::Eoldutf8::foo" used only once: possible typo at here.
+${Char::Eoldutf8::dot}         = ${Char::Eoldutf8::dot};
+${Char::Eoldutf8::dot_s}       = ${Char::Eoldutf8::dot_s};
+${Char::Eoldutf8::eD}          = ${Char::Eoldutf8::eD};
+${Char::Eoldutf8::eS}          = ${Char::Eoldutf8::eS};
+${Char::Eoldutf8::eW}          = ${Char::Eoldutf8::eW};
+${Char::Eoldutf8::eH}          = ${Char::Eoldutf8::eH};
+${Char::Eoldutf8::eV}          = ${Char::Eoldutf8::eV};
+${Char::Eoldutf8::eR}          = ${Char::Eoldutf8::eR};
+${Char::Eoldutf8::eN}          = ${Char::Eoldutf8::eN};
+${Char::Eoldutf8::not_alnum}   = ${Char::Eoldutf8::not_alnum};
+${Char::Eoldutf8::not_alpha}   = ${Char::Eoldutf8::not_alpha};
+${Char::Eoldutf8::not_ascii}   = ${Char::Eoldutf8::not_ascii};
+${Char::Eoldutf8::not_blank}   = ${Char::Eoldutf8::not_blank};
+${Char::Eoldutf8::not_cntrl}   = ${Char::Eoldutf8::not_cntrl};
+${Char::Eoldutf8::not_digit}   = ${Char::Eoldutf8::not_digit};
+${Char::Eoldutf8::not_graph}   = ${Char::Eoldutf8::not_graph};
+${Char::Eoldutf8::not_lower}   = ${Char::Eoldutf8::not_lower};
+${Char::Eoldutf8::not_lower_i} = ${Char::Eoldutf8::not_lower_i};
+${Char::Eoldutf8::not_print}   = ${Char::Eoldutf8::not_print};
+${Char::Eoldutf8::not_punct}   = ${Char::Eoldutf8::not_punct};
+${Char::Eoldutf8::not_space}   = ${Char::Eoldutf8::not_space};
+${Char::Eoldutf8::not_upper}   = ${Char::Eoldutf8::not_upper};
+${Char::Eoldutf8::not_upper_i} = ${Char::Eoldutf8::not_upper_i};
+${Char::Eoldutf8::not_word}    = ${Char::Eoldutf8::not_word};
+${Char::Eoldutf8::not_xdigit}  = ${Char::Eoldutf8::not_xdigit};
+${Char::Eoldutf8::eb}          = ${Char::Eoldutf8::eb};
+${Char::Eoldutf8::eB}          = ${Char::Eoldutf8::eB};
 
 #
 # old UTF-8 split
@@ -1996,38 +2024,9 @@ sub Char::Eoldutf8::fc_() {
 # old UTF-8 regexp capture
 #
 {
-    # 10.3. Creating Persistent Private Variables
-    # in Chapter 10. Subroutines
-    # of ISBN 0-596-00313-7 Perl Cookbook, 2nd Edition.
-
-    my $last_s_matched = 0;
-
     sub Char::Eoldutf8::capture {
-        if ($last_s_matched and ($_[0] =~ /\A [1-9][0-9]* \z/oxms)) {
-            return $_[0] + 1;
-        }
         return $_[0];
     }
-
-    # old UTF-8 mark last regexp matched
-    sub Char::Eoldutf8::matched() {
-        $last_s_matched = 0;
-    }
-
-    # old UTF-8 mark last s/// matched
-    sub Char::Eoldutf8::s_matched() {
-        $last_s_matched = 1;
-    }
-
-    # P.854 31.17. use re
-    # in Chapter 31. Pragmatic Modules
-    # of ISBN 0-596-00027-8 Programming Perl Third Edition.
-
-    # P.1026 re
-    # in Chapter 29. Pragmatic Modules
-    # of ISBN 978-0-596-00492-7 Programming Perl 4th Edition.
-
-    $Char::Eoldutf8::matched = qr/(?{Char::Eoldutf8::matched})/;
 }
 
 #
@@ -3261,7 +3260,7 @@ sub charlist_not_qr {
         if (scalar(@singleoctet) >= 1) {
 
             # any character other than multiple-octet and single octet character class
-            return '(?!' . join('|', @multipleoctet) . ')(?:(?:[\xC0-\xDF]|[\xE0-\xEF][\x80-\xBF]|[\xF0-\xF4][\x80-\xBF][\x80-\xBF])[\x00-\xFF]|[^\x80-\xFF' . join('', @singleoctet) . '])';
+            return '(?!' . join('|', @multipleoctet) . ')(?:(?:[\xC0-\xDF]|[\xE0-\xEF][\x80-\xBF]|[\xF0-\xF4][\x80-\xBF][\x80-\xBF])[\x80-\xBF]|[^\x80-\xFF' . join('', @singleoctet) . '])';
         }
         else {
 
@@ -3273,7 +3272,7 @@ sub charlist_not_qr {
         if (scalar(@singleoctet) >= 1) {
 
             # any character other than single octet character class
-            return                                      '(?:(?:[\xC0-\xDF]|[\xE0-\xEF][\x80-\xBF]|[\xF0-\xF4][\x80-\xBF][\x80-\xBF])[\x00-\xFF]|[^\x80-\xFF' . join('', @singleoctet) . '])';
+            return                                      '(?:(?:[\xC0-\xDF]|[\xE0-\xEF][\x80-\xBF]|[\xF0-\xF4][\x80-\xBF][\x80-\xBF])[\x80-\xBF]|[^\x80-\xFF' . join('', @singleoctet) . '])';
         }
         else {
 
@@ -3505,7 +3504,7 @@ sub _DOS_like_glob {
 
     # UNIX-like system
     else {
-        $expr =~ s{ \A ~ ( (?:(?:[\xC0-\xDF]|[\xE0-\xEF][\x80-\xBF]|[\xF0-\xF4][\x80-\xBF][\x80-\xBF])[\x00-\xFF]|[^\x80-\xFF/])* ) }
+        $expr =~ s{ \A ~ ( (?:(?:[\xC0-\xDF]|[\xE0-\xEF][\x80-\xBF]|[\xF0-\xF4][\x80-\xBF][\x80-\xBF])[\x80-\xBF]|[^\x80-\xFF/])* ) }
                   { $1 ? (getpwnam($1))[7] : ($ENV{'HOME'} || $ENV{'LOGDIR'} || (getpwuid($<))[7]) }oxmse;
     }
 
@@ -3575,7 +3574,7 @@ OUTER:
         # wildcards with a drive prefix such as h:*.pm must be changed
         # to h:./*.pm to expand correctly
         if ($^O =~ /\A (?: MSWin32 | NetWare | symbian | dos ) \z/oxms) {
-            if ($expr =~ s# \A ((?:[A-Za-z]:)?) ((?:[\xC0-\xDF]|[\xE0-\xEF][\x80-\xBF]|[\xF0-\xF4][\x80-\xBF][\x80-\xBF])[\x00-\xFF]|[^\x80-\xFF/\\]) #$1./$2#oxms) {
+            if ($expr =~ s# \A ((?:[A-Za-z]:)?) ((?:[\xC0-\xDF]|[\xE0-\xEF][\x80-\xBF]|[\xF0-\xF4][\x80-\xBF][\x80-\xBF])[\x80-\xBF]|[^\x80-\xFF/\\]) #$1./$2#oxms) {
                 $fix_drive_relative_paths = 1;
             }
         }
@@ -3702,8 +3701,8 @@ sub _parse_line {
     $line .= ' ';
     my @piece = ();
     while ($line =~ /
-        " ( (?: (?:[\xC0-\xDF]|[\xE0-\xEF][\x80-\xBF]|[\xF0-\xF4][\x80-\xBF][\x80-\xBF])[\x00-\xFF]|[^\x80-\xFF"]   )*  ) " \s+ |
-          ( (?: (?:[\xC0-\xDF]|[\xE0-\xEF][\x80-\xBF]|[\xF0-\xF4][\x80-\xBF][\x80-\xBF])[\x00-\xFF]|[^\x80-\xFF"\s] )*  )   \s+
+        " ( (?: (?:[\xC0-\xDF]|[\xE0-\xEF][\x80-\xBF]|[\xF0-\xF4][\x80-\xBF][\x80-\xBF])[\x80-\xBF]|[^\x80-\xFF"]   )*  ) " \s+ |
+          ( (?: (?:[\xC0-\xDF]|[\xE0-\xEF][\x80-\xBF]|[\xF0-\xF4][\x80-\xBF][\x80-\xBF])[\x80-\xBF]|[^\x80-\xFF"\s] )*  )   \s+
         /oxmsg
     ) {
         push @piece, defined($1) ? $1 : $2;
@@ -3721,7 +3720,7 @@ sub _parse_path {
     $path .= '/';
     my @subpath = ();
     while ($path =~ /
-        ((?: (?:[\xC0-\xDF]|[\xE0-\xEF][\x80-\xBF]|[\xF0-\xF4][\x80-\xBF][\x80-\xBF])[\x00-\xFF]|[^\x80-\xFF\/\\] )+?) [\/\\]
+        ((?: (?:[\xC0-\xDF]|[\xE0-\xEF][\x80-\xBF]|[\xF0-\xF4][\x80-\xBF][\x80-\xBF])[\x80-\xBF]|[^\x80-\xFF\/\\] )+?) [\/\\]
         /oxmsg
     ) {
         push @subpath, $1;
@@ -3736,17 +3735,6 @@ sub _parse_path {
 # ${^PREMATCH}, $PREMATCH, $` the string preceding what was matched
 #
 sub Char::Eoldutf8::PREMATCH {
-    if (defined($&)) {
-        if (defined($1) and (CORE::substr($&,-CORE::length($1),CORE::length($1)) eq $1)) {
-            return CORE::substr($&,0,CORE::length($&)-CORE::length($1));
-        }
-        else {
-            croak 'Use of "$`", $PREMATCH and ${^PREMATCH} need to /( capture all )/ in regexp';
-        }
-    }
-    else {
-        return '';
-    }
     return $`;
 }
 
@@ -3754,17 +3742,6 @@ sub Char::Eoldutf8::PREMATCH {
 # ${^MATCH}, $MATCH, $& the string that matched
 #
 sub Char::Eoldutf8::MATCH {
-    if (defined($&)) {
-        if (defined($1)) {
-            return $1;
-        }
-        else {
-            croak 'Use of "$&", $MATCH and ${^MATCH} need to /( capture all )/ in regexp';
-        }
-    }
-    else {
-        return '';
-    }
     return $&;
 }
 
