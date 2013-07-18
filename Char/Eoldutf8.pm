@@ -11,6 +11,14 @@ package Char::Eoldutf8;
 use 5.00503;    # Galapagos Consensus 1998 for primetools
 # use 5.008001; # Lancaster Consensus 2013 for toolchains
 
+# 12.3. Delaying use Until Runtime
+# in Chapter 12. Packages, Libraries, and Modules
+# of ISBN 0-596-00313-7 Perl Cookbook, 2nd Edition.
+# (and so on)
+
+BEGIN { eval q{ use vars qw($VERSION) } }
+$VERSION = sprintf '%d.%02d', q$Revision: 0.92 $ =~ /(\d+)/xmsg;
+
 BEGIN {
     if ($^X =~ / jperl /oxmsi) {
         die __FILE__, ": needs perl(not jperl) 5.00503 or later. (\$^X==$^X)";
@@ -22,14 +30,6 @@ BEGIN {
         die __FILE__, ": is not US-ASCII script (must be US-ASCII script).";
     }
 }
-
-# 12.3. Delaying use Until Runtime
-# in Chapter 12. Packages, Libraries, and Modules
-# of ISBN 0-596-00313-7 Perl Cookbook, 2nd Edition.
-# (and so on)
-
-BEGIN { eval q{ use vars qw($VERSION) } }
-$VERSION = sprintf '%d.%02d', q$Revision: 0.91 $ =~ /(\d+)/xmsg;
 
 BEGIN {
 
@@ -2474,14 +2474,14 @@ sub _charlist_tr {
 #
 sub _cc {
     if (scalar(@_) == 0) {
-        die __FILE__, ": function cc got no parameter.";
+        die __FILE__, ": subroutine cc got no parameter.";
     }
     elsif (scalar(@_) == 1) {
         return sprintf('\x%02X',$_[0]);
     }
     elsif (scalar(@_) == 2) {
         if ($_[0] > $_[1]) {
-            die __FILE__, ": function cc got \$_[0] > \$_[1] parameters).";
+            die __FILE__, ": subroutine cc got \$_[0] > \$_[1] parameters).";
         }
         elsif ($_[0] == $_[1]) {
             return sprintf('\x%02X',$_[0]);
@@ -2494,7 +2494,7 @@ sub _cc {
         }
     }
     else {
-        die __FILE__, ": function cc got 3 or more parameters (@{[scalar(@_)]} parameters).";
+        die __FILE__, ": subroutine cc got 3 or more parameters (@{[scalar(@_)]} parameters).";
     }
 }
 
@@ -2689,7 +2689,7 @@ sub _octets {
         }
     }
     else {
-        die __FILE__, ": function _octets got invalid length ($length).";
+        die __FILE__, ": subroutine _octets got invalid length ($length).";
     }
 }
 
@@ -2773,7 +2773,7 @@ sub _range_regexp {
         }
 
         else {
-            die __FILE__, ": function _range_regexp panic.";
+            die __FILE__, ": subroutine _range_regexp panic.";
         }
     }
 
@@ -2986,7 +2986,7 @@ sub _charlist {
                 }
 
                 else {
-                    die __FILE__, ": function make_regexp panic.";
+                    die __FILE__, ": subroutine make_regexp panic.";
                 }
 
                 if ($length == 1) {
@@ -4174,7 +4174,7 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
   @split = Char::Eoldutf8::split();
   @split = Char::Eoldutf8::split;
 
-  This function scans a string given by $string for separators, and splits the
+  This subroutine scans a string given by $string for separators, and splits the
   string into a list of substring, returning the resulting list value in list
   context or the count of substring in scalar context. Scalar context also causes
   split to write its result to @_, but this usage is deprecated. The separators
@@ -4187,13 +4187,13 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
   expression modifiers to the /pattern/, like /pattern/i, /pattern/x, etc. The
   //m modifier is assumed when you split on the pattern /^/.
 
-  If $limit is specified and positive, the function splits into no more than that
+  If $limit is specified and positive, the subroutine splits into no more than that
   many fields (though it may split into fewer if it runs out of separators). If
   $limit is negative, it is treated as if an arbitrarily large $limit has been
   specified If $limit is omitted or zero, trailing null fields are stripped from
   the result (which potential users of pop would do wel to remember). If $string
-  is omitted, the function splits the $_ string. If /pattern/ is also omitted or
-  is the literal space, " ", the function split on whitespace, /\s+/, after
+  is omitted, the subroutine splits the $_ string. If /pattern/ is also omitted or
+  is the literal space, " ", the subroutine split on whitespace, /\s+/, after
   skipping any leading whitespace.
 
   A /pattern/ of /^/ is secretly treated if it it were /^/m, since it isn't much
@@ -4261,7 +4261,7 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
   that vary at runtime. As with ordinary patterns, to do run-time compilation only
   once, use /$variable/o.
 
-  As a special case, if the expression is a single space (" "), the function
+  As a special case, if the expression is a single space (" "), the subroutine
   splits on whitespace just as Char::Eoldutf8::split with no arguments does. Thus,
   Char::Eoldutf8::split(" ") can be used to emulate awk's default behavior. In contrast,
   Char::Eoldutf8::split(/ /) will give you as many null initial fields as there are
@@ -4321,7 +4321,7 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
   which is like the y/// operator in the Unix sed program, only better, in
   everybody's humble opinion.
 
-  This function scans a old UTF-8 string character by character and replaces all
+  This subroutine scans a old UTF-8 string character by character and replaces all
   occurrences of the characters found in $searchlist with the corresponding character
   in $replacementlist. It returns the number of characters replaced or deleted.
   If no old UTF-8 string is specified via =~ operator, the $_ variable is translated.
@@ -4346,12 +4346,12 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
   $chop = Char::Eoldutf8::chop();
   $chop = Char::Eoldutf8::chop;
 
-  This function chops off the last character of a string variable and returns the
-  character chopped. The Char::Eoldutf8::chop function is used primary to remove the newline
+  This subroutine chops off the last character of a string variable and returns the
+  character chopped. The Char::Eoldutf8::chop subroutine is used primary to remove the newline
   from the end of an input recoed, and it is more efficient than using a
   substitution. If that's all you're doing, then it would be safer to use chomp,
   since Char::Eoldutf8::chop always shortens the string no matter what's there, and chomp
-  is more selective. If no argument is given, the function chops the $_ variable.
+  is more selective. If no argument is given, the subroutine chops the $_ variable.
 
   You cannot Char::Eoldutf8::chop a literal, only a variable. If you Char::Eoldutf8::chop a list of
   variables, each string in the list is chopped:
@@ -4403,10 +4403,10 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
   $byte_pos = Char::Eoldutf8::index($string,$substr,$byte_offset);
   $byte_pos = Char::Eoldutf8::index($string,$substr);
 
-  This function searches for one string within another. It returns the byte position
+  This subroutine searches for one string within another. It returns the byte position
   of the first occurrence of $substring in $string. The $byte_offset, if specified,
   says how many bytes from the start to skip before beginning to look. Positions are
-  based at 0. If the substring is not found, the function returns one less than the
+  based at 0. If the substring is not found, the subroutine returns one less than the
   base, ordinarily -1. To work your way through a string, you might say:
 
   $byte_pos = -1;
@@ -4420,9 +4420,9 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
   $byte_pos = Char::Eoldutf8::rindex($string,$substr,$byte_offset);
   $byte_pos = Char::Eoldutf8::rindex($string,$substr);
 
-  This function works just like Char::Eoldutf8::index except that it returns the byte
+  This subroutine works just like Char::Eoldutf8::index except that it returns the byte
   position of the last occurrence of $substring in $string (a reverse Char::Eoldutf8::index).
-  The function returns -1 if $substring is not found. $byte_offset, if specified,
+  The subroutine returns -1 if $substring is not found. $byte_offset, if specified,
   is the rightmost byte position that may be returned. To work your way through a
   string backward, say:
 
@@ -4437,11 +4437,11 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
   $lc = Char::Eoldutf8::lc($string);
   $lc = Char::Eoldutf8::lc_;
 
-  This function returns a lowercased version of old UTF-8 $string (or $_, if
-  $string is omitted). This is the internal function implementing the \L escape
+  This subroutine returns a lowercased version of old UTF-8 $string (or $_, if
+  $string is omitted). This is the internal subroutine implementing the \L escape
   in double-quoted strings.
 
-  You can use the Char::Eoldutf8::fc function for case-insensitive comparisons via Char::OldUTF8
+  You can use the Char::Eoldutf8::fc subroutine for case-insensitive comparisons via Char::OldUTF8
   software.
 
 =item Lower case first character of string
@@ -4449,8 +4449,8 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
   $lcfirst = Char::Eoldutf8::lcfirst($string);
   $lcfirst = Char::Eoldutf8::lcfirst_;
 
-  This function returns a version of old UTF-8 $string with the first character
-  lowercased (or $_, if $string is omitted). This is the internal function
+  This subroutine returns a version of old UTF-8 $string with the first character
+  lowercased (or $_, if $string is omitted). This is the internal subroutine
   implementing the \l escape in double-quoted strings.
 
 =item Upper case string
@@ -4458,11 +4458,11 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
   $uc = Char::Eoldutf8::uc($string);
   $uc = Char::Eoldutf8::uc_;
 
-  This function returns an uppercased version of old UTF-8 $string (or $_, if
-  $string is omitted). This is the internal function implementing the \U escape
+  This subroutine returns an uppercased version of old UTF-8 $string (or $_, if
+  $string is omitted). This is the internal subroutine implementing the \U escape
   in interpolated strings. For titlecase, use Char::Eoldutf8::ucfirst instead.
 
-  You can use the Char::Eoldutf8::fc function for case-insensitive comparisons via Char::OldUTF8
+  You can use the Char::Eoldutf8::fc subroutine for case-insensitive comparisons via Char::OldUTF8
   software.
 
 =item Upper case first character of string
@@ -4470,13 +4470,13 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
   $ucfirst = Char::Eoldutf8::ucfirst($string);
   $ucfirst = Char::Eoldutf8::ucfirst_;
 
-  This function returns a version of old UTF-8 $string with the first character
+  This subroutine returns a version of old UTF-8 $string with the first character
   titlecased and other characters left alone (or $_, if $string is omitted).
   Titlecase is "Camel" for an initial capital that has (or expects to have)
   lowercase characters following it, not uppercase ones. Exsamples are the first
   letter of a sentence, of a person's name, of a newspaper headline, or of most
   words in a title. Characters with no titlecase mapping return the uppercase
-  mapping instead. This is the internal function implementing the \u escape in
+  mapping instead. This is the internal subroutine implementing the \u escape in
   double-quoted strings.
 
   To capitalize a string by mapping its first character to titlecase and the rest
@@ -4513,8 +4513,8 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
   $fc = Char::Eoldutf8::fc($string);
   $fc = Char::Eoldutf8::fc_;
 
-  New to Char::OldUTF8 software, this function returns the full Unicode-like casefold of
-  old UTF-8 $string (or $_, if omitted). This is the internal function implementing
+  New to Char::OldUTF8 software, this subroutine returns the full Unicode-like casefold of
+  old UTF-8 $string (or $_, if omitted). This is the internal subroutine implementing
   the \F escape in double-quoted strings.
 
   Just as title-case is based on uppercase but different, foldcase is based on
@@ -4542,20 +4542,20 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
   @ignorecase = Char::Eoldutf8::ignorecase(@string);
 
-  This function is internal use to m/ /i, s/ / /i, split / /i and qr/ /i.
+  This subroutine is internal use to m/ /i, s/ / /i, split / /i and qr/ /i.
 
 =item Make capture number
 
   $capturenumber = Char::Eoldutf8::capture($string);
 
-  This function is internal use to m/ /, s/ / /, split / / and qr/ /.
+  This subroutine is internal use to m/ /, s/ / /, split / / and qr/ /.
 
 =item Make character
 
   $chr = Char::Eoldutf8::chr($code);
   $chr = Char::Eoldutf8::chr_;
 
-  This function returns a programmer-visible character, character represented by
+  This subroutine returns a programmer-visible character, character represented by
   that $code in the character set. For example, Char::Eoldutf8::chr(65) is "A" in either
   ASCII or old UTF-8, not Unicode. For the reverse of Char::Eoldutf8::chr, use Char::OldUTF8::ord.
 
@@ -4564,11 +4564,11 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
   @glob = Char::Eoldutf8::glob($string);
   @glob = Char::Eoldutf8::glob_;
 
-  This function returns the value of $string with filename expansions the way a
+  This subroutine returns the value of $string with filename expansions the way a
   DOS-like shell would expand them, returning the next successive name on each
   call. If $string is omitted, $_ is globbed instead. This is the internal
-  function implementing the <*> and glob operator.
-  This function function when the pathname ends with chr(0x5C) on MSWin32.
+  subroutine implementing the <*> and glob operator.
+  This subroutine function when the pathname ends with chr(0x5C) on MSWin32.
 
   For ease of use, the algorithm matches the DOS-like shell's style of expansion,
   not the UNIX-like shell's. An asterisk ("*") matches any sequence of any
@@ -4581,7 +4581,7 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
   backslashes if you are putting them in literally, due to double-quotish parsing
   of the pattern by perl.
 
-  The Char::Eoldutf8::glob function grandfathers the use of whitespace to separate multiple
+  The Char::Eoldutf8::glob subroutine grandfathers the use of whitespace to separate multiple
   patterns such as <*.c *.h>. If you want to glob filenames that might contain
   whitespace, you'll have to use extra quotes around the spacy filename to protect
   it. For example, to glob filenames that have an "e" followed by a space followed
