@@ -1,14 +1,12 @@
 NAME
 
-       Char::OldUTF8 - Source code filter for old UTF-8 script (Imitation JPerl)
+       OldUTF8 - Source code filter for old UTF-8 script (Imitation JPerl)
 
 SYNOPSIS
 
     In your script:
 
-      use Char::OldUTF8; # CPAN formal style
-         or
-      use OldUTF8; # casual style
+      use OldUTF8;
 
     At command prompt:
 
